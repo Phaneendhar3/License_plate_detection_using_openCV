@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>License Plate Detector</title>
+    <!-- Bootstrap CDN for quick styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      body { background: linear-gradient(135deg,#f6f9ff,#e6fff7); min-height:100vh }
+      .card-custom { border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.08) }
+      #result-img { max-width: 100%; border-radius: 6px; border: 4px solid #e9f7ef }
+      .brand { color: #0b6b4f }
+    </style>
+  </head>
+  <body>
+    <div class="container py-5">
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="card card-custom p-4">
+            <div class="d-flex align-items-center mb-3">
+              <div class="me-3">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="#0b6b4f" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v12H3z"/></svg>
+              </div>
+              <div>
+                <h3 class="mb-0 brand">License Plate Detector</h3>
+                <small class="text-muted">Upload an image and press Detect — the app will show a bounding box and extracted text separately.</small>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <input class="form-control" type="file" id="file-input" accept="image/*">
+            </div>
+
+            <div class="d-flex gap-2 mb-3">
+              <button class="btn btn-success" id="detect-btn">Detect</button>
+              <button class="btn btn-outline-secondary" id="clear-btn">Clear</button>
+              <div id="loading" class="align-self-center text-muted" style="display:none">Processing...</div>
+            </div>
+
+            <div class="mt-4">
+              <h5>Result</h5>
+              <div class="row">
+                <div class="col-md-8">
+                  <img id="result-img" src="" alt="Result will appear here" class="img-fluid" />
+                </div>
+                <div class="col-md-4">
+                  <div class="card p-3" style="background:#fffbe6">
+                    <h6 class="mb-2">Detected text</h6>
+                    <div id="detected-text" style="font-size:1.2rem; font-weight:600; color:#0b6b4f">(no text)</div>
+                    <div id="confidence" class="mt-2 text-muted small"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const btn = document.getElementById('detect-btn');
+      const fileInput = document.getElementById('file-input');
+      const resImg = document.getElementById('result-img');
+      const detText = document.getElementById('detected-text');
+      const loading = document.getElementById('loading');
+
+      btn.addEventListener('click', async () => {
+        const f = fileInput.files[0];
+        if (!f) { alert('Please choose an image first'); return }
+        loading.style.display = 'inline';
+        detText.textContent = '';
+        resImg.src = '';
+
+        const fd = new FormData();
+        fd.append('image', f);
+
+        try {
+          const resp = await fetch('/detect', { method: 'POST', body: fd });
+          const data = await resp.json();
+          if (data.error) {
+            alert('Error: ' + data.error);
+          } else {
+            resImg.src = data.image;
+            detText.textContent = data.text || '(no text detected)';
+          }
+        } catch (err) {
+          alert('Request failed: ' + err);
+        } finally {
+          loading.style.display = 'none';
+        }
+      });
+    </script>
+  </body>
+ </html>

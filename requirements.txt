@@ -1,0 +1,5 @@
+opencv-python>=4.5.5
+pytesseract>=0.3.10
+numpy
+flask>=2.0
+easyocr>=1.6
